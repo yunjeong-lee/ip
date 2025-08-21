@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Knight {
@@ -11,12 +13,11 @@ public class Knight {
     static String divideLine = "\t" + line.repeat(6) + "\n";
 
     // Initialize ArrayList tasks with capacity 100
-    public static ArrayList<TaskTuple> taskStorage = new ArrayList<>(100);
+    public static ArrayList<Task> taskStorage = new ArrayList<>(100);
 
     // addTask : add to taskStorage and print the added
-    public static void addTask(TaskTuple taskInput) {
+    public static void addTask(Task taskInput) {
         taskStorage.add(taskInput);
-        System.out.println(taskStorage.toArray().length);
         print(divideLine + "\t added: " + taskInput.taskName + "\n" + divideLine);
     }
 
@@ -24,73 +25,81 @@ public class Knight {
     public static void listTasks() {
         print(divideLine + "\t Here are the tasks in your list:");
         for (int i = 0; i < taskStorage.toArray().length; i++) {
-            String index = String.valueOf(i+1);
-            TaskTuple taskObj = taskStorage.get(i);
-            String tickmark = (taskObj.taskDone) ? ".[X] " : ".[ ] ";
-            print("\t " + index + tickmark + taskObj.taskName);
+            String index = String.valueOf(i+1) + ".";
+            print("\t " + index + taskStorage.get(i).toString());
         }
-        print("\n" + divideLine);
+        print(divideLine);
     }
 
-    // Helper to identify "mark number"
-    public static boolean startsWithMark(String input) {
-        // add exception handling
+    // Helpers to identify 'mark' 'unmark' 'deadlien' 'event' 'todo'
+    public static boolean startsWithString(String input, String startString) {
         if (input.isBlank()) {
             return false;
         }
         String[] userInputs = input.split(" ");
-        return (userInputs[0].equals("mark"));
-    }
-
-    // Helper to identify "unmark number"
-    public static boolean startsWithUnark(String input) {
-        // add exception handling
-        if (input.isBlank()) {
-            return false;
-        }
-        String[] userInputs = input.split(" ");
-        return (userInputs[0].equals("unmark"));
+        return userInputs[0].equals(startString);
     }
 
     public static void markTaskStorageAt(int index) {
         print(divideLine + "\t Nice! I've marked this task as done:");
-        TaskTuple currTask = taskStorage.get(index);
+        Task currTask = taskStorage.get(index);
         currTask.taskDone = true;
-        print("\t   [X] " + currTask.taskName);
-        print(divideLine);
+        print("\t   " + currTask.toString() + "\n" + divideLine);
     }
 
     public static void unmarkTaskStorageAt(int index) {
         print(divideLine + "\t OK, I've marked this task as not done yet:");
-        TaskTuple currTask = taskStorage.get(index);
+        Task currTask = taskStorage.get(index);
         currTask.taskDone = false;
-        print("\t   [ ] " + currTask.taskName);
-        print(divideLine);
+        print("\t   " + currTask.toString() + "\n" + divideLine);
     }
 
+    // Helper to prune out the first string (eg, "deadline", "event", etc.)
+    public static String withoutFirst(String input) {
+        String[] originalInput = input.split(" ");
+        String[] newInput = new String[originalInput.length - 1];
+        // Copy elements from index 1 to the end to ignore "deadline"
+        System.arraycopy(originalInput, 1, newInput, 0, newInput.length);
+        return String.join(" ", newInput);
+    }
+
+    public static void addDeadline(Deadline dTask) {
+        taskStorage.add(dTask);
+        print(divideLine + "\t Got it. I've added this task:\n\t   " + dTask.toString() + "\n" + divideLine);
+    }
     public static void main(String[] args) {
         print(divideLine + "\t Hello! I'm Knight\n\t What can I do for you?\n" + divideLine);
 
         Scanner scanner = new Scanner(System.in);
         String userInput = scanner.nextLine();
-        TaskTuple inputTask = new TaskTuple(userInput);
+        Task inputTask = new Task(userInput);
         do {
             if (userInput.equals("list")) {
                 listTasks();
-            } else if (startsWithMark(userInput)) {
-                print("now marking!\n");
+            } else if (startsWithString(userInput, "mark")) {
                 int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
                 markTaskStorageAt(inputIndex);
-
-            } else if (startsWithUnark(userInput)) {
-                print("now unmarking!\n");
+            } else if (startsWithString(userInput, "mark")) {
                 int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
                 unmarkTaskStorageAt(inputIndex);
+            } else if (startsWithString(userInput, "deadline")) {
+                String withoutFirstString = withoutFirst(userInput);
+
+                String[] deadlinesArr = withoutFirstString.split(" ");
+                // First find index of "\by"
+                List<String> deadlinesList = Arrays.asList(deadlinesArr);
+                int indexBy = deadlinesList.indexOf("/by");
+                String[] descriptionArr = new String[indexBy];
+                System.arraycopy(deadlinesArr, 0, descriptionArr, 0, indexBy);
+
+                String description = String.join(" ", descriptionArr);
+                Deadline deadlineTask = new Deadline(description,"some date");
+                addDeadline(deadlineTask);
             } else {
                 addTask(inputTask); //userInput
             }
             userInput = scanner.nextLine();
-            inputTask = new TaskTuple(userInput);
+            inputTask = new Task(userInput);
         } while (!userInput.equals("bye"));
 
         print(divideLine + "\t Bye. Hope to see you again soon!\n" + divideLine);
