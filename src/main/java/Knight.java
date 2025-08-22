@@ -63,6 +63,13 @@ public class Knight {
         print("\t   " + currTask.toString() + "\n" + divideLine);
     }
 
+    public static void removeFromTaskStorageAt(int index) {
+        print(divideLine + "\t Noted. I've removed this task:");
+        Task currTask = taskStorage.remove(index);
+        print("\t   " + currTask.toString() + "\n\t Now you have "
+                + taskStorage.toArray().length + " tasks in the list.\n" + divideLine);
+    }
+
     // Helper to prune out the first string (eg, "deadline", "event", etc.)
     public static String withoutFirst(String input) {
         String[] originalInput = input.split(" ");
@@ -88,6 +95,9 @@ public class Knight {
                 } else if (startsWithString(userInput, "unmark")) {
                     int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
                     unmarkTaskStorageAt(inputIndex);
+                } else if (startsWithString(userInput, "delete")) {
+                    int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
+                    removeFromTaskStorageAt(inputIndex);
                 } else if (startsWithString(userInput, "todo")) {
                     String todoTaskDescription = withoutFirst(userInput);
                     Todo todoTask = new Todo(todoTaskDescription);
