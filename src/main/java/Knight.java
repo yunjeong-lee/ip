@@ -79,6 +79,26 @@ public class Knight {
         return String.join(" ", newInput);
     }
 
+    public static Update updateCommand(String userInput) throws KnightException, MeaninglessException {
+        if (userInput.equals("list")) {
+            return Update.LIST;
+        } else if (startsWithString(userInput, "mark")) {
+            return Update.MARK;
+        } else if (startsWithString(userInput, "unmark")) {
+            return Update.UNMARK;
+        } else if (startsWithString(userInput, "delete")) {
+            return Update.DELETE;
+        } else if (startsWithString(userInput, "todo")) {
+            return Update.TODO;
+        } else if (startsWithString(userInput, "event")) {
+            return Update.EVENT;
+        } else if (startsWithString(userInput, "deadline")) {
+            return Update.DEADLINE;
+        } else {
+            return Update.OTHER;
+        }
+    }
+
     public static void main(String[] args) {
         print(divideLine + "\t Hello! I'm Knight\n\t What can I do for you?\n" + divideLine);
 
@@ -87,65 +107,74 @@ public class Knight {
         Task inputTask = new Task(userInput);
         do {
             try {
-                if (userInput.equals("list")) {
-                    listTasks();
-                } else if (startsWithString(userInput, "mark")) {
-                    int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
-                    markTaskStorageAt(inputIndex);
-                } else if (startsWithString(userInput, "unmark")) {
-                    int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
-                    unmarkTaskStorageAt(inputIndex);
-                } else if (startsWithString(userInput, "delete")) {
-                    int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
-                    removeFromTaskStorageAt(inputIndex);
-                } else if (startsWithString(userInput, "todo")) {
-                    String todoTaskDescription = withoutFirst(userInput);
-                    Todo todoTask = new Todo(todoTaskDescription);
-                    addTask(todoTask);
-                } else if (startsWithString(userInput, "event")) {
-                    String withoutFirstString = withoutFirst(userInput);
-                    String[] eventArr = withoutFirstString.split(" ");
-                    // First find indexes of "\from" and "\to"
-                    List<String> eventList = Arrays.asList(eventArr);
-                    int indexFrom = eventList.indexOf("/from");
-                    int indexTo = eventList.indexOf("/to");
-                    String[] descriptionArr = new String[indexFrom];
-                    String[] fromArr = new String[indexTo - indexFrom - 1];
-                    String[] toArr = new String[eventArr.length - indexTo - 1];
-                    System.arraycopy(eventArr, 0, descriptionArr, 0, indexFrom);
-                    System.arraycopy(eventArr, indexFrom + 1, fromArr, 0, indexTo - indexFrom - 1);
-                    System.arraycopy(eventArr, indexTo + 1, toArr, 0, eventArr.length - indexTo - 1);
+                switch(updateCommand(userInput)) {
+                    case LIST:
+                        listTasks();
+                        break;
+                    case MARK:
+                        int markInputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
+                        markTaskStorageAt(markInputIndex);
+                        break;
+                    case UNMARK:
+                        int unmarkInputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
+                        unmarkTaskStorageAt(unmarkInputIndex);
+                        break;
+                    case DELETE:
+                        int delieteInputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
+                        removeFromTaskStorageAt(delieteInputIndex);
+                        break;
+                    case TODO:
+                        String todoTaskDescription = withoutFirst(userInput);
+                        Todo todoTask = new Todo(todoTaskDescription);
+                        addTask(todoTask);
+                        break;
+                    case EVENT:
+                        String withoutFirstString = withoutFirst(userInput);
+                        String[] eventArr = withoutFirstString.split(" ");
+                        // First find indexes of "\from" and "\to"
+                        List<String> eventList = Arrays.asList(eventArr);
+                        int indexFrom = eventList.indexOf("/from");
+                        int indexTo = eventList.indexOf("/to");
+                        String[] descriptionArr = new String[indexFrom];
+                        String[] fromArr = new String[indexTo - indexFrom - 1];
+                        String[] toArr = new String[eventArr.length - indexTo - 1];
+                        System.arraycopy(eventArr, 0, descriptionArr, 0, indexFrom);
+                        System.arraycopy(eventArr, indexFrom + 1, fromArr, 0, indexTo - indexFrom - 1);
+                        System.arraycopy(eventArr, indexTo + 1, toArr, 0, eventArr.length - indexTo - 1);
 
-                    // Put together
-                    String description = String.join(" ", descriptionArr);
-                    String from = String.join(" ", fromArr);
-                    String to = (toArr.length == 1) ? toArr[0] : String.join(" ", toArr);
-//                print("description: " + description + "\nfrom: " + from + "\nto: " + to);
+                        // Put together
+                        String description = String.join(" ", descriptionArr);
+                        String from = String.join(" ", fromArr);
+                        String to = (toArr.length == 1) ? toArr[0] : String.join(" ", toArr);
 
-                    // Create Event task and add
-                    Event eventTask = new Event(description, from, to);
-                    addTask(eventTask);
-                } else if (startsWithString(userInput, "deadline")) {
-                    String withoutFirstString = withoutFirst(userInput);
-                    String[] deadlinesArr = withoutFirstString.split(" ");
+                        // Create Event task and add
+                        Event eventTask = new Event(description, from, to);
+                        addTask(eventTask);
+                        break;
+                    case DEADLINE:
+                        String dWithoutFirstString = withoutFirst(userInput);
+                        String[] deadlinesArr = dWithoutFirstString.split(" ");
 
-                    // First find index of "\by"
-                    List<String> deadlinesList = Arrays.asList(deadlinesArr);
-                    int indexBy = deadlinesList.indexOf("/by");
-                    String[] descriptionArr = new String[indexBy];
-                    String[] byArr = new String[deadlinesArr.length - indexBy - 1];
-                    System.arraycopy(deadlinesArr, 0, descriptionArr, 0, indexBy);
-                    System.arraycopy(deadlinesArr, indexBy + 1, byArr, 0, deadlinesArr.length - indexBy - 1);
+                        // First find index of "\by"
+                        List<String> deadlinesList = Arrays.asList(deadlinesArr);
+                        int indexBy = deadlinesList.indexOf("/by");
+                        String[] dDescriptionArr = new String[indexBy];
+                        String[] byArr = new String[deadlinesArr.length - indexBy - 1];
+                        System.arraycopy(deadlinesArr, 0, dDescriptionArr, 0, indexBy);
+                        System.arraycopy(deadlinesArr, indexBy + 1, byArr, 0, deadlinesArr.length - indexBy - 1);
 
-                    // Put together
-                    String description = String.join(" ", descriptionArr);
-                    String by = String.join(" ", byArr);
+                        // Put together
+                        String dDescription = String.join(" ", dDescriptionArr);
+                        String by = String.join(" ", byArr);
 
-                    // Create Deadline task and add
-                    Deadline deadlineTask = new Deadline(description, by);
-                    addTask(deadlineTask);
-                } else {
-                    addTask(inputTask); //userInput
+                        // Create Deadline task and add
+                        Deadline deadlineTask = new Deadline(dDescription, by);
+                        addTask(deadlineTask);
+                        break;
+                    case OTHER:
+                        // TODO: To raise an error here
+                        addTask(inputTask); //userInput
+                        break;
                 }
             } catch (KnightException e) {
                 print(divideLine + "\t Oh no! The description of " + e + " cannot be empty. :/\n" + divideLine);

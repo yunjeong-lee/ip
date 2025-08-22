@@ -1,0 +1,3 @@
+public enum Update {
+    LIST, MARK, UNMARK, DELETE, TODO, EVENT, DEADLINE, OTHER
+}
