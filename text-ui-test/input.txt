@@ -1,4 +1,5 @@
 todo read book
+todo
 list
 deadline return book /by June 6th
 list
@@ -15,5 +16,8 @@ list
 deadline return book /by Sunday
 event project meeting /from Mon 2pm /to 4pm
 deadline do homework /by no idea :-p
+event
+deadline
+blah
 list
 bye
