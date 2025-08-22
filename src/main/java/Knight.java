@@ -33,11 +33,19 @@ public class Knight {
     }
 
     // Helpers to identify 'mark' 'unmark' 'deadlien' 'event' 'todo'
-    public static boolean startsWithString(String input, String startString) {
+    public static boolean startsWithString(String input, String startString)
+            throws KnightException, MeaninglessException {
         if (input.isBlank()) {
             return false;
         }
         String[] userInputs = input.split(" ");
+        String fstString = userInputs[0];
+        if ((fstString.equals("todo") || fstString.equals("event") || fstString.equals("deadline")) &&
+                userInputs.length == 1) {
+            throw new KnightException(input);
+        } else if (userInputs.length == 1) {
+            throw new MeaninglessException();
+        }
         return userInputs[0].equals(startString);
     }
 
@@ -71,62 +79,68 @@ public class Knight {
         String userInput = scanner.nextLine();
         Task inputTask = new Task(userInput);
         do {
-            if (userInput.equals("list")) {
-                listTasks();
-            } else if (startsWithString(userInput, "mark")) {
-                int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
-                markTaskStorageAt(inputIndex);
-            } else if (startsWithString(userInput, "unmark")) {
-                int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
-                unmarkTaskStorageAt(inputIndex);
-            } else if (startsWithString(userInput, "todo")) {
-                String todoTaskDescription = withoutFirst(userInput);
-                Todo todoTask = new Todo(todoTaskDescription);
-                addTask(todoTask);
-            } else if (startsWithString(userInput, "event")) {
-                String withoutFirstString = withoutFirst(userInput);
-                String[] eventArr = withoutFirstString.split(" ");
-                // First find indexes of "\from" and "\to"
-                List<String> eventList = Arrays.asList(eventArr);
-                int indexFrom = eventList.indexOf("/from");
-                int indexTo = eventList.indexOf("/to");
-                String[] descriptionArr = new String[indexFrom];
-                String[] fromArr = new String[indexTo - indexFrom - 1];
-                String[] toArr = new String[eventArr.length - indexTo - 1];
-                System.arraycopy(eventArr, 0, descriptionArr, 0, indexFrom);
-                System.arraycopy(eventArr, indexFrom + 1, fromArr, 0, indexTo - indexFrom - 1);
-                System.arraycopy(eventArr, indexTo + 1, toArr, 0, eventArr.length - indexTo - 1);
+            try {
+                if (userInput.equals("list")) {
+                    listTasks();
+                } else if (startsWithString(userInput, "mark")) {
+                    int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
+                    markTaskStorageAt(inputIndex);
+                } else if (startsWithString(userInput, "unmark")) {
+                    int inputIndex = Integer.valueOf(userInput.split(" ")[1]) - 1;
+                    unmarkTaskStorageAt(inputIndex);
+                } else if (startsWithString(userInput, "todo")) {
+                    String todoTaskDescription = withoutFirst(userInput);
+                    Todo todoTask = new Todo(todoTaskDescription);
+                    addTask(todoTask);
+                } else if (startsWithString(userInput, "event")) {
+                    String withoutFirstString = withoutFirst(userInput);
+                    String[] eventArr = withoutFirstString.split(" ");
+                    // First find indexes of "\from" and "\to"
+                    List<String> eventList = Arrays.asList(eventArr);
+                    int indexFrom = eventList.indexOf("/from");
+                    int indexTo = eventList.indexOf("/to");
+                    String[] descriptionArr = new String[indexFrom];
+                    String[] fromArr = new String[indexTo - indexFrom - 1];
+                    String[] toArr = new String[eventArr.length - indexTo - 1];
+                    System.arraycopy(eventArr, 0, descriptionArr, 0, indexFrom);
+                    System.arraycopy(eventArr, indexFrom + 1, fromArr, 0, indexTo - indexFrom - 1);
+                    System.arraycopy(eventArr, indexTo + 1, toArr, 0, eventArr.length - indexTo - 1);
 
-                // Put together
-                String description = String.join(" ", descriptionArr);
-                String from = String.join(" ", fromArr);
-                String to = (toArr.length == 1) ? toArr[0] : String.join(" ", toArr);
+                    // Put together
+                    String description = String.join(" ", descriptionArr);
+                    String from = String.join(" ", fromArr);
+                    String to = (toArr.length == 1) ? toArr[0] : String.join(" ", toArr);
 //                print("description: " + description + "\nfrom: " + from + "\nto: " + to);
 
-                // Create Event task and add
-                Event eventTask = new Event(description, from, to);
-                addTask(eventTask);
-            } else if (startsWithString(userInput, "deadline")) {
-                String withoutFirstString = withoutFirst(userInput);
-                String[] deadlinesArr = withoutFirstString.split(" ");
+                    // Create Event task and add
+                    Event eventTask = new Event(description, from, to);
+                    addTask(eventTask);
+                } else if (startsWithString(userInput, "deadline")) {
+                    String withoutFirstString = withoutFirst(userInput);
+                    String[] deadlinesArr = withoutFirstString.split(" ");
 
-                // First find index of "\by"
-                List<String> deadlinesList = Arrays.asList(deadlinesArr);
-                int indexBy = deadlinesList.indexOf("/by");
-                String[] descriptionArr = new String[indexBy];
-                String[] byArr = new String[deadlinesArr.length - indexBy - 1];
-                System.arraycopy(deadlinesArr, 0, descriptionArr, 0, indexBy);
-                System.arraycopy(deadlinesArr, indexBy + 1, byArr, 0, deadlinesArr.length - indexBy - 1);
+                    // First find index of "\by"
+                    List<String> deadlinesList = Arrays.asList(deadlinesArr);
+                    int indexBy = deadlinesList.indexOf("/by");
+                    String[] descriptionArr = new String[indexBy];
+                    String[] byArr = new String[deadlinesArr.length - indexBy - 1];
+                    System.arraycopy(deadlinesArr, 0, descriptionArr, 0, indexBy);
+                    System.arraycopy(deadlinesArr, indexBy + 1, byArr, 0, deadlinesArr.length - indexBy - 1);
 
-                // Put together
-                String description = String.join(" ", descriptionArr);
-                String by = String.join(" ", byArr);
+                    // Put together
+                    String description = String.join(" ", descriptionArr);
+                    String by = String.join(" ", byArr);
 
-                // Create Deadline task and add
-                Deadline deadlineTask = new Deadline(description, by);
-                addTask(deadlineTask);
-            } else {
-                addTask(inputTask); //userInput
+                    // Create Deadline task and add
+                    Deadline deadlineTask = new Deadline(description, by);
+                    addTask(deadlineTask);
+                } else {
+                    addTask(inputTask); //userInput
+                }
+            } catch (KnightException e) {
+                print(divideLine + "\t Oh no! The description of " + e + " cannot be empty. :/\n" + divideLine);
+            } catch (MeaninglessException e) {
+                print(divideLine + "\t Oh no! I do not understand what that means. :/\n" + divideLine);
             }
             userInput = scanner.nextLine();
             inputTask = new Task(userInput);
